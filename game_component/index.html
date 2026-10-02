@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+
+    background: transparent;
+}
+
+
+/* ==========================================
+   전체 게임
+========================================== */
+
+#game {
+
+    width: 100%;
+
+    height: 690px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #CDEEFF 0%,
+            #E7F7FF 72%,
+            #F2FBFF 100%
+        );
+
+    box-shadow:
+        inset 0 0 40px
+        rgba(120,190,220,0.18);
+}
+
+
+/* ==========================================
+   배경
+========================================== */
+
+.cloud {
+
+    position: absolute;
+
+    z-index: 1;
+
+    opacity: 0.6;
+
+    user-select: none;
+}
+
+.cloud1 {
+    top: 30px;
+    left: 8%;
+    font-size: 60px;
+}
+
+.cloud2 {
+    top: 120px;
+    right: 10%;
+    font-size: 48px;
+}
+
+.cloud3 {
+    top: 260px;
+    left: 46%;
+    font-size: 40px;
+    opacity: 0.3;
+}
+
+
+.sun {
+
+    position: absolute;
+
+    top: 30px;
+
+    right: 27%;
+
+    font-size: 45px;
+
+    z-index: 1;
+
+    user-select: none;
+}
+
+
+/* ==========================================
+   코드
+========================================== */
+
+.code {
+
+    position: absolute;
+
+    z-index: 5;
+
+    padding:
+        12px 18px;
+
+    border-radius:
+        15px;
+
+    background:
+        rgba(255,255,255,0.96);
+
+    border:
+        1px solid
+        rgba(140,190,215,0.4);
+
+    box-shadow:
+        0 7px 18px
+        rgba(70,110,130,0.14);
+
+    color:
+        #3F5865;
+
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size:
+        18px;
+
+    font-weight:
+        600;
+
+    white-space:
+        pre;
+
+    user-select:
+        none;
+
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s ease,
+        filter 0.22s ease;
+}
+
+
+/* 정답 */
+
+.code.correct {
+
+    opacity: 0;
+
+    transform:
+        scale(1.35);
+
+    filter:
+        brightness(1.4);
+}
+
+
+/* 새 문제 */
+
+.code.spawn {
+
+    animation:
+        spawnCode
+        0.35s
+        ease-out;
+}
+
+
+@keyframes spawnCode {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            scale(0.65);
+    }
+
+    70% {
+
+        opacity: 1;
+
+        transform:
+            scale(1.08);
+    }
+
+    100% {
+
+        transform:
+            scale(1);
+    }
+}
+
+
+/* ==========================================
+   들판
+========================================== */
+
+#field {
+
+    position: absolute;
+
+    left: 0;
+
+    bottom: 0;
+
+    width: 100%;
+
+    height: 75px;
+
+    z-index: 3;
+
+    background:
+        #C8E6BB;
+
+    border-radius:
+        55% 55% 0 0;
+
+    text-align:
+        center;
+
+    padding-top:
+        18px;
+
+    font-size:
+        28px;
+
+    user-select:
+        none;
+}
+
+
+/* ==========================================
+   입력 부분
+========================================== */
+
+#inputArea {
+
+    position: absolute;
+
+    left: 50%;
+
+    bottom: 90px;
+
+    transform:
+        translateX(-50%);
+
+    z-index: 20;
+
+    width: min(
+        720px,
+        88%
+    );
+}
+
+
+#answer {
+
+    width: 100%;
+
+    height: 52px;
+
+    border: 2px solid
+        rgba(120,170,195,0.45);
+
+    border-radius:
+        15px;
+
+    padding:
+        0 18px;
+
+    outline: none;
+
+    background:
+        rgba(255,255,255,0.97);
+
+    color:
+        #334E5B;
+
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size:
+        18px;
+
+    box-shadow:
+        0 7px 20px
+        rgba(70,110,130,0.13);
+}
+
+
+#answer:focus {
+
+    border-color:
+        #82BBD1;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(130,187,209,0.15);
+}
+
+
+/* ==========================================
+   피드백
+========================================== */
+
+#feedback {
+
+    position: absolute;
+
+    left: 50%;
+
+    bottom: 153px;
+
+    transform:
+        translateX(-50%);
+
+    z-index: 30;
+
+    min-width: 180px;
+
+    text-align: center;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-size:
+        18px;
+
+    font-weight:
+        bold;
+
+    pointer-events:
+        none;
+
+    opacity: 0;
+}
+
+
+#feedback.show {
+
+    animation:
+        feedbackPop
+        0.7s
+        ease-out;
+}
+
+
+#feedback.correctFeedback {
+
+    color:
+        #438766;
+}
+
+
+#feedback.wrongFeedback {
+
+    color:
+        #B76D6D;
+}
+
+
+@keyframes feedbackPop {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            translateX(-50%)
+            translateY(10px)
+            scale(0.8);
+    }
+
+    25% {
+
+        opacity: 1;
+
+        transform:
+            translateX(-50%)
+            translateY(0)
+            scale(1.08);
+    }
+
+    75% {
+
+        opacity: 1;
+    }
+
+    100% {
+
+        opacity: 0;
+    }
+}
+
+
+/* ==========================================
+   내 점수
+========================================== */
+
+#scoreBox {
+
+    position: absolute;
+
+    top: 18px;
+
+    right: 18px;
+
+    z-index: 30;
+
+    background:
+        rgba(255,255,255,0.9);
+
+    border-radius:
+        14px;
+
+    padding:
+        10px 16px;
+
+    color:
+        #527A68;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-size:
+        17px;
+
+    font-weight:
+        bold;
+
+    box-shadow:
+        0 4px 12px
+        rgba(70,110,130,0.1);
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div id="game">
+
+    <div class="cloud cloud1">☁️</div>
+    <div class="cloud cloud2">☁️</div>
+    <div class="cloud cloud3">☁️</div>
+
+    <div class="sun">☀️</div>
+
+    <div id="scoreBox">
+        ⭐ 0점
+    </div>
+
+    <div id="feedback"></div>
+
+    <div id="inputArea">
+
+        <input
+            id="answer"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="떨어지는 코드 중 하나를 입력하고 Enter!"
+        >
+
+    </div>
+
+    <div id="field">
+        🌱　🌷　🌿　🌼　🌱　🌷　🌿　🌼　🌱
+    </div>
+
+</div>
+
+
+<script>
+
+/* ======================================================
+   Streamlit Component 통신
+====================================================== */
+
+function sendMessageToStreamlitClient(type, data) {
+
+    const outData = Object.assign({
+        isStreamlitMessage: true,
+        type: type
+    }, data);
+
+    window.parent.postMessage(
+        outData,
+        "*"
+    );
+}
+
+
+function setComponentValue(value) {
+
+    sendMessageToStreamlitClient(
+        "streamlit:setComponentValue",
+        {
+            value: value
+        }
+    );
+}
+
+
+function setFrameHeight(height) {
+
+    sendMessageToStreamlitClient(
+        "streamlit:setFrameHeight",
+        {
+            height: height
+        }
+    );
+}
+
+
+function componentReady() {
+
+    sendMessageToStreamlitClient(
+        "streamlit:componentReady",
+        {
+            apiVersion: 1
+        }
+    );
+}
+
+
+/* ======================================================
+   상태
+====================================================== */
+
+let commands = [];
+
+let objects = [];
+
+let localScore = 0;
+
+let correctCount = 0;
+
+let wrongCount = 0;
+
+let eventId = 0;
+
+let running = false;
+
+let lastTime = performance.now();
+
+
+/* ======================================================
+   DOM
+====================================================== */
+
+const game = document.getElementById(
+    "game"
+);
+
+const input = document.getElementById(
+    "answer"
+);
+
+const feedback = document.getElementById(
+    "feedback"
+);
+
+const scoreBox = document.getElementById(
+    "scoreBox"
+);
+
+
+/* ======================================================
+   랜덤
+====================================================== */
+
+function randomBetween(min, max) {
+
+    return (
+        Math.random()
+        * (max - min)
+        + min
+    );
+}
+
+
+function randomCommand() {
+
+    if (commands.length === 0) {
+
+        return "print('Hello')";
+    }
+
+    return commands[
+        Math.floor(
+            Math.random()
+            * commands.length
+        )
+    ];
+}
+
+
+/* ======================================================
+   코드 생성
+====================================================== */
+
+function createCodeObject(
+    initial = false
+) {
+
+    const element = (
+        document.createElement(
+            "div"
+        )
+    );
+
+    element.className =
+        "code spawn";
+
+    const text = (
+        randomCommand()
+    );
+
+    element.textContent = text;
+
+    game.appendChild(
+        element
+    );
+
+
+    /*
+    코드가 오른쪽 밖으로
+    빠져나가지 않도록 영역 제한
+    */
+
+    const maxX = (
+        game.clientWidth
+        - 260
+    );
+
+    const x = randomBetween(
+        25,
+        Math.max(
+            30,
+            maxX
+        )
+    );
+
+
+    const y = initial
+        ? randomBetween(
+            -80,
+            300
+        )
+        : -70;
+
+
+    /*
+    px / second
+    */
+
+    const speed = randomBetween(
+        25,
+        43
+    );
+
+
+    const object = {
+
+        element:
+            element,
+
+        text:
+            text,
+
+        x:
+            x,
+
+        y:
+            y,
+
+        speed:
+            speed,
+
+        dead:
+            false
+    };
+
+
+    element.style.left =
+        x + "px";
+
+    element.style.top =
+        y + "px";
+
+
+    objects.push(
+        object
+    );
+}
+
+
+/* ======================================================
+   처음 문제 4개
+====================================================== */
+
+function startGame() {
+
+    if (running) {
+
+        return;
+    }
+
+    running = true;
+
+    objects.forEach(
+        object => {
+
+            object.element.remove();
+        }
+    );
+
+    objects = [];
+
+
+    for (
+        let i = 0;
+        i < 4;
+        i++
+    ) {
+
+        createCodeObject(
+            true
+        );
+    }
+
+
+    input.focus();
+
+    lastTime = (
+        performance.now()
+    );
+
+    requestAnimationFrame(
+        update
+    );
+}
+
+
+/* ======================================================
+   게임 루프
+====================================================== */
+
+function update(now) {
+
+    if (!running) {
+
+        return;
+    }
+
+
+    const delta = Math.min(
+        (now - lastTime)
+        / 1000,
+        0.05
+    );
+
+    lastTime = now;
+
+
+    const bottomLimit = (
+        game.clientHeight
+        - 185
+    );
+
+
+    objects.forEach(
+        object => {
+
+            if (object.dead) {
+
+                return;
+            }
+
+
+            object.y += (
+                object.speed
+                * delta
+            );
+
+
+            object.element.style.top =
+                object.y + "px";
+
+
+            /*
+            바닥까지 내려오면
+            새 문제로 교체
+            현재는 오답 처리하지 않음
+            */
+
+            if (
+                object.y
+                > bottomLimit
+            ) {
+
+                resetObject(
+                    object
+                );
+            }
+
+        }
+    );
+
+
+    requestAnimationFrame(
+        update
+    );
+}
+
+
+/* ======================================================
+   바닥에 도달한 문제 재생성
+====================================================== */
+
+function resetObject(object) {
+
+    object.text = (
+        randomCommand()
+    );
+
+    object.element.textContent =
+        object.text;
+
+    object.x = randomBetween(
+        25,
+        Math.max(
+            30,
+            game.clientWidth
+            - 260
+        )
+    );
+
+    object.y = -70;
+
+    object.speed = randomBetween(
+        25,
+        43
+    );
+
+    object.element.style.left =
+        object.x + "px";
+
+    object.element.style.top =
+        object.y + "px";
+
+
+    object.element.classList.remove(
+        "spawn"
+    );
+
+    void object.element.offsetWidth;
+
+    object.element.classList.add(
+        "spawn"
+    );
+}
+
+
+/* ======================================================
+   정답 애니메이션
+====================================================== */
+
+function removeCorrectObject(object) {
+
+    object.dead = true;
+
+    object.element.classList.add(
+        "correct"
+    );
+
+
+    setTimeout(
+        () => {
+
+            object.element.remove();
+
+            objects = objects.filter(
+                item => (
+                    item !== object
+                )
+            );
+
+
+            /*
+            사라진 뒤
+            새로운 문제 생성
+            */
+
+            createCodeObject(
+                false
+            );
+
+        },
+        220
+    );
+}
+
+
+/* ======================================================
+   피드백
+====================================================== */
+
+function showFeedback(
+    message,
+    correct
+) {
+
+    feedback.textContent =
+        message;
+
+    feedback.className = "";
+
+    void feedback.offsetWidth;
+
+
+    if (correct) {
+
+        feedback.classList.add(
+            "correctFeedback"
+        );
+
+    } else {
+
+        feedback.classList.add(
+            "wrongFeedback"
+        );
+    }
+
+
+    feedback.classList.add(
+        "show"
+    );
+}
+
+
+/* ======================================================
+   Streamlit으로 결과 전송
+====================================================== */
+
+function sendResult(
+    correct
+) {
+
+    eventId += 1;
+
+
+    setComponentValue({
+
+        event_id:
+            eventId,
+
+        correct:
+            correct,
+
+        score:
+            localScore,
+
+        correct_count:
+            correctCount,
+
+        wrong_count:
+            wrongCount
+    });
+}
+
+
+/* ======================================================
+   입력
+====================================================== */
+
+input.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key
+            !== "Enter"
+        ) {
+
+            return;
+        }
+
+
+        event.preventDefault();
+
+
+        const answer =
+            input.value;
+
+
+        if (
+            answer.length
+            === 0
+        ) {
+
+            return;
+        }
+
+
+        /*
+        현재 화면에 있는 문제 중
+        정확하게 일치하는 문제 찾기
+        */
+
+        const matched = (
+            objects.find(
+                object =>
+                    !object.dead
+                    &&
+                    object.text
+                    === answer
+            )
+        );
+
+
+        if (matched) {
+
+            localScore += 10;
+
+            correctCount += 1;
+
+
+            scoreBox.textContent =
+                "⭐ "
+                + localScore
+                + "점";
+
+
+            showFeedback(
+                "정답! +10 🌼",
+                true
+            );
+
+
+            /*
+            화면에서는 즉시 삭제
+            */
+
+            removeCorrectObject(
+                matched
+            );
+
+
+            /*
+            Streamlit에는 결과 전달
+            */
+
+            sendResult(
+                true
+            );
+
+        } else {
+
+            wrongCount += 1;
+
+
+            showFeedback(
+                "다시 확인해보세요 🍂",
+                false
+            );
+
+
+            sendResult(
+                false
+            );
+        }
+
+
+        /*
+        바로 다음 문제를 칠 수 있도록
+        입력창 즉시 비움
+        */
+
+        input.value = "";
+
+        input.focus();
+    }
+);
+
+
+/* ======================================================
+   Streamlit → 게임 데이터 수신
+====================================================== */
+
+window.addEventListener(
+    "message",
+    function(event) {
+
+        const data =
+            event.data;
+
+
+        if (
+            data.type
+            !== "streamlit:render"
+        ) {
+
+            return;
+        }
+
+
+        const args =
+            data.args || {};
+
+
+        if (
+            Array.isArray(
+                args.commands
+            )
+        ) {
+
+            commands =
+                args.commands;
+        }
+
+
+        /*
+        Python에 저장된 점수에서 시작
+        */
+
+        if (
+            typeof args.score
+            === "number"
+            &&
+            !running
+        ) {
+
+            localScore =
+                args.score;
+
+            scoreBox.textContent =
+                "⭐ "
+                + localScore
+                + "점";
+        }
+
+
+        if (!running) {
+
+            startGame();
+        }
+
+
+        setFrameHeight(
+            700
+        );
+    }
+);
+
+
+/* ======================================================
+   시작
+====================================================== */
+
+componentReady();
+
+setFrameHeight(
+    700
+);
+
+</script>
+
+</body>
+</html>
