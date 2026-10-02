@@ -1,0 +1,21 @@
+{
+    "commands": [
+        "print('Hello')",
+        "print('Python')",
+        "x = 10",
+        "y = 20",
+        "name = input()",
+        "age = int(input())",
+        "print(x)",
+        "print(x + y)",
+        "score = 100",
+        "total = 0",
+        "if x > 10:",
+        "if score >= 60:",
+        "for i in range(5):",
+        "for i in range(10):",
+        "numbers = [1, 2, 3]",
+        "numbers.append(4)",
+        "print(numbers)"
+    ]
+}
