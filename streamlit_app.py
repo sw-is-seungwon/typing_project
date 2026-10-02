@@ -1209,28 +1209,17 @@ def student_game():
             st.session_state.current_command
         )
 
+        game_html = f"""
+        <div class="sky-game">
+        <div class="cloud-one">☁️</div>
+        <div class="cloud-two">☁️</div>
+        <div class="falling-code">{safe_command}</div>
+        <div class="field">🌱　🌷　🌿　🌼　🌱　🌷　🌿</div>
+        </div>
+        """
+
         st.markdown(
-            f"""
-            <div class="sky-game">
-
-                <div class="cloud-one">
-                    ☁️
-                </div>
-
-                <div class="cloud-two">
-                    ☁️
-                </div>
-
-                <div class="falling-code">
-                    {safe_command}
-                </div>
-
-                <div class="field">
-                    🌱　🌷　🌿　🌼　🌱　🌷　🌿
-                </div>
-
-            </div>
-            """,
+            game_html,
             unsafe_allow_html=True
         )
 
