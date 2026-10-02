@@ -1,8 +1,8 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from supabase import create_client
 import random
 import json
-import html
 
 
 # =========================================================
@@ -23,9 +23,14 @@ st.set_page_config(
 
 @st.cache_resource
 def init_supabase():
+
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_SECRET_KEY"]
-    return create_client(url, key)
+
+    return create_client(
+        url,
+        key
+    )
 
 
 supabase = init_supabase()
@@ -53,30 +58,41 @@ commands = load_commands()
 
 
 # =========================================================
-# 4. Session State
+# 4. JavaScript 게임 컴포넌트
+# =========================================================
+
+typing_game = components.declare_component(
+    "typing_game",
+    path="game_component"
+)
+
+
+# =========================================================
+# 5. Session State 초기화
 # =========================================================
 
 defaults = {
 
-    "page": "home",
+    "page":
+        "home",
 
-    "room_code": None,
+    "room_code":
+        None,
 
-    "nickname": None,
+    "nickname":
+        None,
 
-    "student_id": None,
+    "student_id":
+        None,
 
-    "team": None,
+    "team":
+        None,
 
-    "teacher_room": None,
+    "teacher_room":
+        None,
 
-    "active_commands": [],
-
-    "last_room_status": None,
-
-    # 마지막으로 맞힌 코드의 위치
-    # 새 코드 등장 애니메이션에 사용
-    "changed_command_index": None
+    "last_room_status":
+        None
 }
 
 
@@ -88,7 +104,7 @@ for key, value in defaults.items():
 
 
 # =========================================================
-# 5. CSS
+# 6. CSS
 # =========================================================
 
 st.markdown(
@@ -97,7 +113,7 @@ st.markdown(
 
 
 /* ======================================================
-   전체 화면
+   전체
 ====================================================== */
 
 .stApp {
@@ -111,17 +127,21 @@ st.markdown(
             #CDE7C4 100%
         );
 
-    color: #4E6875;
+    color:
+        #4E6875;
 }
 
 
 .block-container {
 
-    max-width: 1500px;
+    max-width:
+        1500px;
 
-    padding-top: 1.5rem;
+    padding-top:
+        1.5rem;
 
-    padding-bottom: 4rem;
+    padding-bottom:
+        4rem;
 }
 
 
@@ -131,29 +151,39 @@ st.markdown(
 
 .main-title {
 
-    text-align: center;
+    text-align:
+        center;
 
-    font-size: 3.2rem;
+    font-size:
+        3.2rem;
 
-    font-weight: 800;
+    font-weight:
+        800;
 
-    color: #54798C;
+    color:
+        #54798C;
 
-    margin-top: 10px;
+    margin-top:
+        10px;
 
-    margin-bottom: 5px;
+    margin-bottom:
+        5px;
 }
 
 
 .subtitle {
 
-    text-align: center;
+    text-align:
+        center;
 
-    color: #7896A5;
+    color:
+        #7896A5;
 
-    font-size: 1.05rem;
+    font-size:
+        1.05rem;
 
-    margin-bottom: 28px;
+    margin-bottom:
+        28px;
 }
 
 
@@ -188,383 +218,20 @@ st.markdown(
 
 .room-code {
 
-    text-align: center;
-
-    font-size: 5rem;
-
-    font-weight: 800;
-
-    color: #648DA1;
-
-    letter-spacing: 10px;
-}
-
-
-/* ======================================================
-   게임 화면
-====================================================== */
-
-.sky-game {
-
-    height: 650px;
-
-    position: relative;
-
-    overflow: hidden;
-
-    border-radius: 30px;
-
-    background:
-        linear-gradient(
-            to bottom,
-            #CDEEFF 0%,
-            #E7F7FF 72%,
-            #F2FBFF 100%
-        );
-
-    box-shadow:
-        inset 0 0 40px
-        rgba(120,190,220,0.18),
-        0 8px 25px
-        rgba(70,110,130,0.10);
-
-    margin-bottom: 18px;
-}
-
-
-/* ======================================================
-   구름
-====================================================== */
-
-.cloud {
-
-    position: absolute;
-
-    opacity: 0.65;
-
-    z-index: 1;
-}
-
-
-.cloud1 {
-
-    top: 40px;
-
-    left: 7%;
-
-    font-size: 65px;
-}
-
-
-.cloud2 {
-
-    top: 110px;
-
-    right: 8%;
-
-    font-size: 50px;
-}
-
-
-.cloud3 {
-
-    top: 250px;
-
-    left: 45%;
-
-    font-size: 42px;
-
-    opacity: 0.35;
-}
-
-
-.sun {
-
-    position: absolute;
-
-    top: 35px;
-
-    right: 25%;
-
-    font-size: 48px;
-
-    opacity: 0.85;
-}
-
-
-/* ======================================================
-   떨어지는 코드
-====================================================== */
-
-.falling-code {
-
-    position: absolute;
-
-    background:
-        rgba(255,255,255,0.97);
-
-    color:
-        #3F5865;
-
-    /*
-    파이썬 코드를 보기 쉽도록
-    고정폭 글꼴 사용
-    */
-
-    font-family:
-        Consolas,
-        "Courier New",
-        monospace;
-
-    font-size:
-        1.18rem;
-
-    font-weight:
-        600;
-
-    /*
-    글자 간격을 아주 조금 넓혀
-    띄어쓰기 구분을 쉽게 함
-    */
-
-    letter-spacing:
-        0.4px;
-
-    /*
-    코드에 있는 여러 개의 공백을
-    그대로 유지
-    */
-
-    white-space:
-        pre;
-
-    padding:
-        13px 20px;
-
-    border-radius:
-        16px;
-
-    border:
-        1px solid
-        rgba(150,200,220,0.4);
-
-    box-shadow:
-        0 7px 18px
-        rgba(70,110,130,0.13);
-
-    z-index:
-        5;
-}
-
-
-/* ======================================================
-   각 코드 위치 + 속도
-====================================================== */
-
-.code1 {
-
-    left: 6%;
-
-    animation:
-        fall1 13s
-        linear infinite;
-}
-
-
-.code2 {
-
-    left: 30%;
-
-    animation:
-        fall2 16s
-        linear infinite;
-
-    animation-delay:
-        -4s;
-}
-
-
-.code3 {
-
-    left: 54%;
-
-    animation:
-        fall3 14s
-        linear infinite;
-
-    animation-delay:
-        -8s;
-}
-
-
-.code4 {
-
-    left: 72%;
-
-    animation:
-        fall4 17s
-        linear infinite;
-
-    animation-delay:
-        -11s;
-}
-
-
-@keyframes fall1 {
-
-    from {
-        top: -70px;
-    }
-
-    to {
-        top: 570px;
-    }
-}
-
-
-@keyframes fall2 {
-
-    from {
-        top: -70px;
-    }
-
-    to {
-        top: 570px;
-    }
-}
-
-
-@keyframes fall3 {
-
-    from {
-        top: -70px;
-    }
-
-    to {
-        top: 570px;
-    }
-}
-
-
-@keyframes fall4 {
-
-    from {
-        top: -70px;
-    }
-
-    to {
-        top: 570px;
-    }
-}
-
-
-/* ======================================================
-   새 문제 등장 효과
-====================================================== */
-
-.code-changed {
-
-    /*
-    낙하 애니메이션과 별도로
-    등장 효과를 적용하기 위해
-    filter와 box-shadow 위주로 사용
-    */
-
-    filter:
-        brightness(1.05);
-
-    box-shadow:
-        0 0 0 4px
-        rgba(255,255,255,0.75),
-        0 0 28px
-        rgba(255,220,120,0.90);
-
-}
-
-
-/*
-새 문제의 내부 글자에
-짧은 등장 애니메이션
-*/
-
-.code-text-changed {
-
-    display: inline-block;
-
-    animation:
-        newCodePop
-        0.65s
-        ease-out;
-}
-
-
-@keyframes newCodePop {
-
-    0% {
-
-        opacity: 0;
-
-        transform:
-            scale(0.65);
-
-        filter:
-            blur(3px);
-    }
-
-    45% {
-
-        opacity: 1;
-
-        transform:
-            scale(1.15);
-
-        filter:
-            blur(0px);
-    }
-
-    100% {
-
-        opacity: 1;
-
-        transform:
-            scale(1);
-    }
-}
-
-
-/* ======================================================
-   들판
-====================================================== */
-
-.field {
-
-    position: absolute;
-
-    bottom: 0;
-
-    left: 0;
-
-    width: 100%;
-
-    height: 75px;
-
-    background:
-        #C8E6BB;
-
-    border-radius:
-        55% 55% 0 0;
-
     text-align:
         center;
 
     font-size:
-        29px;
+        5rem;
 
-    padding-top:
-        18px;
+    font-weight:
+        800;
 
-    z-index:
-        2;
+    color:
+        #648DA1;
+
+    letter-spacing:
+        10px;
 }
 
 
@@ -620,32 +287,13 @@ st.markdown(
 
 
 /* ======================================================
-   학생 팀 관리
-====================================================== */
-
-.student-team-row {
-
-    background:
-        rgba(255,255,255,0.65);
-
-    border-radius:
-        15px;
-
-    padding:
-        8px 14px;
-
-    margin-bottom:
-        6px;
-}
-
-
-/* ======================================================
    대기 화면
 ====================================================== */
 
 .waiting-box {
 
-    text-align: center;
+    text-align:
+        center;
 
     background:
         rgba(255,255,255,0.82);
@@ -707,7 +355,7 @@ st.markdown(
 
 
 /* ======================================================
-   입력창
+   입력
 ====================================================== */
 
 .stTextInput input {
@@ -717,17 +365,6 @@ st.markdown(
 
     background:
         rgba(255,255,255,0.95);
-
-    font-family:
-        Consolas,
-        "Courier New",
-        monospace;
-
-    font-size:
-        1.05rem;
-
-    letter-spacing:
-        0.3px;
 }
 
 
@@ -753,6 +390,18 @@ st.markdown(
 
 
 /* ======================================================
+   컴포넌트 iframe
+====================================================== */
+
+iframe {
+
+    border-radius:
+        28px;
+
+}
+
+
+/* ======================================================
    모바일
 ====================================================== */
 
@@ -764,21 +413,13 @@ st.markdown(
             2.2rem;
     }
 
-    .falling-code {
+    .room-code {
 
         font-size:
-            0.8rem;
-
-        padding:
-            10px;
-    }
-
-    .sky-game {
-
-        height:
-            550px;
+            3.5rem;
     }
 }
+
 
 </style>
 """,
@@ -787,7 +428,7 @@ unsafe_allow_html=True
 
 
 # =========================================================
-# 6. DB 함수
+# 7. DB 함수
 # =========================================================
 
 def make_room_code():
@@ -795,14 +436,20 @@ def make_room_code():
     for _ in range(100):
 
         code = str(
-            random.randint(10, 99)
+            random.randint(
+                10,
+                99
+            )
         )
 
         result = (
             supabase
             .table("rooms")
             .select("room_code")
-            .eq("room_code", code)
+            .eq(
+                "room_code",
+                code
+            )
             .execute()
         )
 
@@ -813,7 +460,13 @@ def make_room_code():
     return None
 
 
-def get_room(room_code):
+# ---------------------------------------------------------
+# 방 정보
+# ---------------------------------------------------------
+
+def get_room(
+    room_code
+):
 
     result = (
         supabase
@@ -833,7 +486,13 @@ def get_room(room_code):
     return None
 
 
-def get_students(room_code):
+# ---------------------------------------------------------
+# 학생 목록
+# ---------------------------------------------------------
+
+def get_students(
+    room_code
+):
 
     result = (
         supabase
@@ -853,6 +512,36 @@ def get_students(room_code):
 
     return result.data
 
+
+# ---------------------------------------------------------
+# 학생 한 명
+# ---------------------------------------------------------
+
+def get_student(
+    student_id
+):
+
+    result = (
+        supabase
+        .table("students")
+        .select("*")
+        .eq(
+            "id",
+            student_id
+        )
+        .execute()
+    )
+
+    if result.data:
+
+        return result.data[0]
+
+    return None
+
+
+# ---------------------------------------------------------
+# 팀 점수
+# ---------------------------------------------------------
 
 def get_team_scores(
     room_code,
@@ -885,6 +574,10 @@ def get_team_scores(
 
     return scores
 
+
+# ---------------------------------------------------------
+# 자동 팀 선택
+# ---------------------------------------------------------
 
 def choose_team(
     room_code,
@@ -932,9 +625,9 @@ def choose_team(
     )
 
 
-# =========================================================
-# 7. 교사용 팀 변경
-# =========================================================
+# ---------------------------------------------------------
+# 교사용 팀 변경
+# ---------------------------------------------------------
 
 def change_student_team(
     student_id,
@@ -945,7 +638,8 @@ def change_student_team(
         supabase
         .table("students")
         .update({
-            "team": new_team
+            "team":
+                new_team
         })
         .eq(
             "id",
@@ -956,122 +650,56 @@ def change_student_team(
 
 
 # =========================================================
-# 8. 게임 문제 관리
-# =========================================================
-
-def create_command_set():
-
-    if len(commands) >= 4:
-
-        st.session_state.active_commands = (
-            random.sample(
-                commands,
-                4
-            )
-        )
-
-    else:
-
-        st.session_state.active_commands = [
-
-            random.choice(
-                commands
-            )
-
-            for _ in range(4)
-        ]
-
-
-def replace_command(index):
-
-    current = (
-        st.session_state.active_commands
-    )
-
-    available = [
-
-        command
-
-        for command in commands
-
-        if command not in current
-    ]
-
-    if available:
-
-        new_value = random.choice(
-            available
-        )
-
-    else:
-
-        new_value = random.choice(
-            commands
-        )
-
-    st.session_state.active_commands[
-        index
-    ] = new_value
-
-    # 어느 위치의 문제가 바뀌었는지 기록
-    st.session_state.changed_command_index = (
-        index
-    )
-
-
-# =========================================================
-# 9. 초기화
+# 8. 처음으로 돌아가기
 # =========================================================
 
 def go_home():
 
-    reset_values = {
-
-        "room_code":
-            None,
-
-        "nickname":
-            None,
-
-        "student_id":
-            None,
-
-        "team":
-            None,
-
-        "teacher_room":
-            None,
-
-        "active_commands":
-            [],
-
-        "last_room_status":
-            None,
-
-        "changed_command_index":
-            None
-    }
-
-    for key, value in reset_values.items():
-
-        st.session_state[key] = value
-
     st.session_state.page = (
         "home"
+    )
+
+    st.session_state.room_code = (
+        None
+    )
+
+    st.session_state.nickname = (
+        None
+    )
+
+    st.session_state.student_id = (
+        None
+    )
+
+    st.session_state.team = (
+        None
+    )
+
+    st.session_state.teacher_room = (
+        None
+    )
+
+    st.session_state.last_room_status = (
+        None
     )
 
     st.rerun()
 
 
 # =========================================================
-# 10. 제목
+# 9. 제목
 # =========================================================
 
 def show_title():
 
     title_html = """
-<div class="main-title">☁️ Python Typing Garden 🌱</div>
-<div class="subtitle">떨어지는 파이썬 코드를 입력하고 팀과 함께 정원을 지켜보세요!</div>
+<div class="main-title">
+☁️ Python Typing Garden 🌱
+</div>
+
+<div class="subtitle">
+떨어지는 파이썬 코드를 입력하고 팀과 함께 정원을 지켜보세요!
+</div>
 """
 
     st.markdown(
@@ -1081,7 +709,7 @@ def show_title():
 
 
 # =========================================================
-# 11. 홈
+# 10. 홈
 # =========================================================
 
 def home():
@@ -1126,11 +754,17 @@ def home():
             use_container_width=True
         ):
 
-            room = room.strip()
+            room = (
+                room.strip()
+            )
 
             nickname = (
                 nickname.strip()
             )
+
+            # ---------------------------------------------
+            # 방 코드 확인
+            # ---------------------------------------------
 
             if (
                 len(room) != 2
@@ -1150,8 +784,10 @@ def home():
 
             else:
 
-                room_data = get_room(
-                    room
+                room_data = (
+                    get_room(
+                        room
+                    )
                 )
 
                 if room_data is None:
@@ -1170,6 +806,10 @@ def home():
                     )
 
                 else:
+
+                    # -------------------------------------
+                    # 중복 닉네임 확인
+                    # -------------------------------------
 
                     existing = (
                         supabase
@@ -1194,12 +834,22 @@ def home():
 
                     else:
 
-                        team = choose_team(
-                            room,
-                            room_data[
-                                "team_count"
-                            ]
+                        # ---------------------------------
+                        # 자동 팀 배정
+                        # ---------------------------------
+
+                        team = (
+                            choose_team(
+                                room,
+                                room_data[
+                                    "team_count"
+                                ]
+                            )
                         )
+
+                        # ---------------------------------
+                        # 학생 생성
+                        # ---------------------------------
 
                         result = (
                             supabase
@@ -1232,6 +882,10 @@ def home():
                             result.data[0]
                         )
 
+                        # ---------------------------------
+                        # 세션 저장
+                        # ---------------------------------
+
                         st.session_state.room_code = (
                             room
                         )
@@ -1251,8 +905,6 @@ def home():
                         st.session_state.last_room_status = (
                             room_data["status"]
                         )
-
-                        create_command_set()
 
                         st.session_state.page = (
                             "student"
@@ -1279,7 +931,7 @@ def home():
 
 
 # =========================================================
-# 12. 교사 방 생성
+# 11. 교사 방 만들기
 # =========================================================
 
 def teacher_create():
@@ -1298,17 +950,19 @@ def teacher_create():
             "☁️ 새로운 게임 만들기"
         )
 
-        team_count = st.slider(
-            "팀 개수",
-            min_value=2,
-            max_value=6,
-            value=3
+        team_count = (
+            st.slider(
+                "팀 개수",
+                min_value=2,
+                max_value=6,
+                value=3
+            )
         )
 
         st.caption(
-            "학생들은 입장할 때 현재 인원이 "
-            "가장 적은 팀으로 자동 배정됩니다. "
-            "게임 시작 전 교사가 직접 변경할 수도 있습니다."
+            "학생은 처음 입장할 때 인원이 가장 적은 "
+            "팀으로 자동 배정됩니다. "
+            "게임 시작 전 교사가 직접 변경할 수 있습니다."
         )
 
         if st.button(
@@ -1364,7 +1018,7 @@ def teacher_create():
 
 
 # =========================================================
-# 13. 교사 대시보드
+# 12. 교사 대시보드
 # =========================================================
 
 def teacher_dashboard():
@@ -1393,9 +1047,15 @@ def teacher_dashboard():
 
     show_title()
 
-    col1, col2 = st.columns(
-        [1, 2]
+    col1, col2 = (
+        st.columns(
+            [1, 2]
+        )
     )
+
+    # -----------------------------------------------------
+    # 방 코드
+    # -----------------------------------------------------
 
     with col1:
 
@@ -1405,9 +1065,19 @@ def teacher_dashboard():
 
         room_html = f"""
 <div class="garden-card">
-<div style="text-align:center; color:#7896A5;">ROOM CODE</div>
-<div class="room-code">{room_code}</div>
-<div style="text-align:center; color:#7896A5;">학생들에게 이 번호를 알려주세요.</div>
+
+<div style="text-align:center; color:#7896A5;">
+ROOM CODE
+</div>
+
+<div class="room-code">
+{room_code}
+</div>
+
+<div style="text-align:center; color:#7896A5;">
+학생들에게 이 번호를 알려주세요.
+</div>
+
 </div>
 """
 
@@ -1415,6 +1085,10 @@ def teacher_dashboard():
             room_html,
             unsafe_allow_html=True
         )
+
+    # -----------------------------------------------------
+    # 게임 관리
+    # -----------------------------------------------------
 
     with col2:
 
@@ -1444,9 +1118,13 @@ def teacher_dashboard():
             f"**{room['team_count']}팀**"
         )
 
-        b1, b2 = st.columns(
-            2
+        b1, b2 = (
+            st.columns(2)
         )
+
+        # ---------------------------------------------
+        # 게임 시작
+        # ---------------------------------------------
 
         with b1:
 
@@ -1478,6 +1156,10 @@ def teacher_dashboard():
 
                 st.rerun()
 
+        # ---------------------------------------------
+        # 게임 종료
+        # ---------------------------------------------
+
         with b2:
 
             if st.button(
@@ -1508,7 +1190,7 @@ def teacher_dashboard():
     st.divider()
 
     # -----------------------------------------------------
-    # 팀 관리
+    # 팀 편성
     # -----------------------------------------------------
 
     teacher_team_manager(
@@ -1538,7 +1220,7 @@ def teacher_dashboard():
 
 
 # =========================================================
-# 14. 교사용 학생 팀 관리
+# 13. 교사용 팀 관리
 # =========================================================
 
 @st.fragment(run_every="2s")
@@ -1555,8 +1237,8 @@ def teacher_team_manager(
     if room_status == "waiting":
 
         st.caption(
-            "학생의 팀을 직접 변경할 수 있습니다. "
-            "게임이 시작되면 팀 편성이 고정됩니다."
+            "학생이 입장하면 자동으로 팀이 배정됩니다. "
+            "아래에서 원하는 팀으로 변경할 수 있습니다."
         )
 
     else:
@@ -1565,8 +1247,10 @@ def teacher_team_manager(
             "게임이 시작되어 팀 편성이 고정되었습니다."
         )
 
-    students = get_students(
-        room_code
+    students = (
+        get_students(
+            room_code
+        )
     )
 
     if not students:
@@ -1576,6 +1260,10 @@ def teacher_team_manager(
         )
 
         return
+
+    # -----------------------------------------------------
+    # 학생별 팀 설정
+    # -----------------------------------------------------
 
     for student in students:
 
@@ -1599,35 +1287,38 @@ def teacher_team_manager(
 
         with col3:
 
-            new_team = st.selectbox(
+            new_team = (
+                st.selectbox(
 
-                "팀 선택",
+                    "팀 선택",
 
-                options=list(
-                    range(
-                        1,
-                        team_count + 1
+                    options=list(
+                        range(
+                            1,
+                            team_count + 1
+                        )
+                    ),
+
+                    index=(
+                        student["team"]
+                        - 1
+                    ),
+
+                    format_func=lambda x:
+                        f"{x}팀",
+
+                    key=(
+                        f"team_select_"
+                        f"{student['id']}"
+                    ),
+
+                    label_visibility=
+                        "collapsed",
+
+                    disabled=(
+                        room_status
+                        != "waiting"
                     )
-                ),
-
-                index=(
-                    student["team"] - 1
-                ),
-
-                format_func=lambda x:
-                    f"{x}팀",
-
-                key=(
-                    f"team_select_"
-                    f"{student['id']}"
-                ),
-
-                label_visibility=
-                    "collapsed",
-
-                disabled=(
-                    room_status
-                    != "waiting"
                 )
             )
 
@@ -1646,14 +1337,14 @@ def teacher_team_manager(
 
                 st.toast(
                     f"{student['nickname']} → "
-                    f"{new_team}팀으로 변경"
+                    f"{new_team}팀으로 변경했습니다."
                 )
 
                 st.rerun()
 
 
 # =========================================================
-# 15. 교사 실시간 현황
+# 14. 교사 실시간 현황
 # =========================================================
 
 @st.fragment(run_every="2s")
@@ -1662,28 +1353,40 @@ def teacher_live_panel(
     team_count
 ):
 
-    students = get_students(
-        room_code
+    students = (
+        get_students(
+            room_code
+        )
     )
 
-    scores = get_team_scores(
-        room_code,
-        team_count
+    scores = (
+        get_team_scores(
+            room_code,
+            team_count
+        )
     )
 
     total_correct = sum(
 
-        student["correct_count"]
+        student[
+            "correct_count"
+        ]
 
         for student in students
     )
 
     total_wrong = sum(
 
-        student["wrong_count"]
+        student[
+            "wrong_count"
+        ]
 
         for student in students
     )
+
+    # -----------------------------------------------------
+    # 전체 현황
+    # -----------------------------------------------------
 
     m1, m2, m3 = (
         st.columns(3)
@@ -1704,12 +1407,18 @@ def teacher_live_panel(
         f"{total_wrong}개"
     )
 
+    # -----------------------------------------------------
+    # 팀 점수
+    # -----------------------------------------------------
+
     st.write(
         "### 🌷 팀 점수"
     )
 
-    columns = st.columns(
-        team_count
+    columns = (
+        st.columns(
+            team_count
+        )
     )
 
     icons = [
@@ -1731,8 +1440,15 @@ def teacher_live_panel(
 
             team_html = f"""
 <div class="team-card">
-<div class="team-number">{icons[i]} {team}팀</div>
-<div class="team-score">{scores[team]}점</div>
+
+<div class="team-number">
+{icons[i]} {team}팀
+</div>
+
+<div class="team-score">
+{scores[team]}점
+</div>
+
 </div>
 """
 
@@ -1740,6 +1456,10 @@ def teacher_live_panel(
                 team_html,
                 unsafe_allow_html=True
             )
+
+    # -----------------------------------------------------
+    # 학생 현황
+    # -----------------------------------------------------
 
     st.write(
         "### 👩‍💻 학생 현황"
@@ -1810,6 +1530,181 @@ def teacher_live_panel(
 
 
 # =========================================================
+# 15. JavaScript 타자 게임
+# =========================================================
+
+def javascript_typing_game(
+    student_id
+):
+
+    # -----------------------------------------------------
+    # 학생 현재 상태
+    # -----------------------------------------------------
+
+    student = (
+        get_student(
+            student_id
+        )
+    )
+
+    if student is None:
+
+        st.error(
+            "학생 정보를 찾을 수 없습니다."
+        )
+
+        return
+
+    # -----------------------------------------------------
+    # JavaScript 컴포넌트 실행
+    # -----------------------------------------------------
+
+    game_result = typing_game(
+
+        commands=
+            commands,
+
+        score=
+            student["score"],
+
+        key=
+            f"typing_game_{student_id}",
+
+        default=
+            None
+    )
+
+    # -----------------------------------------------------
+    # 아직 입력 이벤트가 없음
+    # -----------------------------------------------------
+
+    if not game_result:
+
+        return
+
+    event_id = (
+        game_result.get(
+            "event_id"
+        )
+    )
+
+    if event_id is None:
+
+        return
+
+    # -----------------------------------------------------
+    # 중복 이벤트 방지
+    # -----------------------------------------------------
+
+    event_key = (
+        f"last_game_event_"
+        f"{student_id}"
+    )
+
+    last_event = (
+        st.session_state.get(
+            event_key
+        )
+    )
+
+    if (
+        last_event
+        == event_id
+    ):
+
+        return
+
+    # 먼저 기록하여
+    # 같은 이벤트 중복 처리 방지
+
+    st.session_state[
+        event_key
+    ] = event_id
+
+    # -----------------------------------------------------
+    # 최신 학생 정보
+    # -----------------------------------------------------
+
+    current = (
+        get_student(
+            student_id
+        )
+    )
+
+    if current is None:
+
+        return
+
+    # -----------------------------------------------------
+    # 정답
+    # -----------------------------------------------------
+
+    if game_result.get(
+        "correct"
+    ):
+
+        new_score = (
+            current["score"]
+            + 10
+        )
+
+        new_correct = (
+            current[
+                "correct_count"
+            ]
+            + 1
+        )
+
+        (
+            supabase
+            .table("students")
+            .update({
+
+                "score":
+                    new_score,
+
+                "correct_count":
+                    new_correct
+
+            })
+            .eq(
+                "id",
+                student_id
+            )
+            .execute()
+        )
+
+    # -----------------------------------------------------
+    # 오답
+    # -----------------------------------------------------
+
+    else:
+
+        new_wrong = (
+            current[
+                "wrong_count"
+            ]
+            + 1
+        )
+
+        (
+            supabase
+            .table("students")
+            .update({
+
+                "wrong_count":
+                    new_wrong
+
+            })
+            .eq(
+                "id",
+                student_id
+            )
+            .execute()
+        )
+
+
+# =========================================================
 # 16. 학생 화면
 # =========================================================
 
@@ -1834,11 +1729,13 @@ def student_game():
         return
 
     # -----------------------------------------------------
-    # 현재 방
+    # 방 확인
     # -----------------------------------------------------
 
-    room = get_room(
-        room_code
+    room = (
+        get_room(
+            room_code
+        )
     )
 
     if room is None:
@@ -1850,35 +1747,33 @@ def student_game():
         return
 
     # -----------------------------------------------------
-    # 학생 팀 정보를 DB에서 다시 확인
-    # 교사가 팀을 변경했을 때 반영
+    # 학생 정보
     # -----------------------------------------------------
 
-    student_result = (
-        supabase
-        .table("students")
-        .select(
-            "team"
-        )
-        .eq(
-            "id",
+    student = (
+        get_student(
             student_id
         )
-        .execute()
     )
 
-    if student_result.data:
+    if student is None:
 
-        st.session_state.team = (
-            student_result.data[0][
-                "team"
-            ]
+        st.error(
+            "학생 정보를 찾을 수 없습니다."
         )
+
+        return
+
+    # 교사가 대기 중 팀을 변경한 경우 반영
+
+    st.session_state.team = (
+        student["team"]
+    )
 
     show_title()
 
     # -----------------------------------------------------
-    # 방 상태 감시
+    # 게임 상태 감시
     # -----------------------------------------------------
 
     student_room_monitor(
@@ -1886,7 +1781,7 @@ def student_game():
     )
 
     # -----------------------------------------------------
-    # 상단
+    # 학생 상단 정보
     # -----------------------------------------------------
 
     top1, top2, top3 = (
@@ -1924,7 +1819,7 @@ def student_game():
         )
 
     # -----------------------------------------------------
-    # 대기
+    # 게임 대기
     # -----------------------------------------------------
 
     if (
@@ -1935,13 +1830,19 @@ def student_game():
         st.markdown(
             """
 <div class="waiting-box">
-<div style="font-size:65px;">☁️</div>
+
+<div style="font-size:65px;">
+☁️
+</div>
+
 <div style="font-size:1.3rem; font-weight:bold;">
 선생님이 게임을 준비하고 있어요.
 </div>
+
 <div style="margin-top:8px;">
 게임이 시작되면 자동으로 화면이 바뀝니다.
 </div>
+
 </div>
 """,
             unsafe_allow_html=True
@@ -1956,7 +1857,7 @@ def student_game():
         return
 
     # -----------------------------------------------------
-    # 종료
+    # 게임 종료
     # -----------------------------------------------------
 
     if (
@@ -1972,20 +1873,7 @@ def student_game():
         return
 
     # -----------------------------------------------------
-    # 문제 생성
-    # -----------------------------------------------------
-
-    if (
-        len(
-            st.session_state.active_commands
-        )
-        != 4
-    ):
-
-        create_command_set()
-
-    # -----------------------------------------------------
-    # 게임 영역
+    # 게임 진행
     # -----------------------------------------------------
 
     left, right = (
@@ -1996,99 +1884,9 @@ def student_game():
 
     with left:
 
-        safe_commands = [
-
-            html.escape(
-                command
-            )
-
-            for command
-            in st.session_state.active_commands
-        ]
-
-        # 바뀐 문제 위치
-        changed_index = (
-            st.session_state.changed_command_index
+        javascript_typing_game(
+            student_id
         )
-
-        code_html = []
-
-        for i in range(4):
-
-            extra_class = ""
-
-            text_class = ""
-
-            if i == changed_index:
-
-                extra_class = (
-                    " code-changed"
-                )
-
-                text_class = (
-                    "code-text-changed"
-                )
-
-            code_html.append(
-                f"""
-<div class="falling-code code{i + 1}{extra_class}">
-<span class="{text_class}">{safe_commands[i]}</span>
-</div>
-"""
-            )
-
-        game_html = f"""
-<div class="sky-game">
-
-<div class="cloud cloud1">☁️</div>
-<div class="cloud cloud2">☁️</div>
-<div class="cloud cloud3">☁️</div>
-
-<div class="sun">☀️</div>
-
-{''.join(code_html)}
-
-<div class="field">
-🌱　🌷　🌿　🌼　🌱　🌷　🌿　🌼　🌱
-</div>
-
-</div>
-"""
-
-        st.markdown(
-            game_html,
-            unsafe_allow_html=True
-        )
-
-        with st.form(
-            "typing_form",
-            clear_on_submit=True
-        ):
-
-            answer = st.text_input(
-
-                "⌨️ 코드 입력",
-
-                placeholder=(
-                    "떨어지는 코드 중 하나를 "
-                    "정확하게 입력하세요"
-                )
-            )
-
-            submitted = (
-                st.form_submit_button(
-                    "🌱 입력!",
-                    use_container_width=True
-                )
-            )
-
-        if submitted:
-
-            check_answer(
-                answer,
-                student_id,
-                room_code
-            )
 
     with right:
 
@@ -2097,19 +1895,9 @@ def student_game():
             room["team_count"]
         )
 
-    # 등장 효과는 한 번만 사용
-    if (
-        st.session_state.changed_command_index
-        is not None
-    ):
-
-        st.session_state.changed_command_index = (
-            None
-        )
-
 
 # =========================================================
-# 17. 학생 방 상태 감시
+# 17. 학생 게임 상태 감시
 # =========================================================
 
 @st.fragment(run_every="1s")
@@ -2117,8 +1905,10 @@ def student_room_monitor(
     room_code
 ):
 
-    room = get_room(
-        room_code
+    room = (
+        get_room(
+            room_code
+        )
     )
 
     if room is None:
@@ -2133,6 +1923,10 @@ def student_room_monitor(
         st.session_state.last_room_status
     )
 
+    # -----------------------------------------------------
+    # 최초 상태
+    # -----------------------------------------------------
+
     if current_status is None:
 
         st.session_state.last_room_status = (
@@ -2140,6 +1934,10 @@ def student_room_monitor(
         )
 
         return
+
+    # -----------------------------------------------------
+    # 상태가 변경됨
+    # -----------------------------------------------------
 
     if (
         current_status
@@ -2154,7 +1952,7 @@ def student_room_monitor(
 
 
 # =========================================================
-# 18. 개인 점수
+# 18. 학생 개인 점수
 # =========================================================
 
 @st.fragment(run_every="2s")
@@ -2162,26 +1960,13 @@ def student_score_panel(
     student_id
 ):
 
-    result = (
-        supabase
-        .table("students")
-        .select(
-            "score, "
-            "correct_count, "
-            "wrong_count"
-        )
-        .eq(
-            "id",
+    student = (
+        get_student(
             student_id
         )
-        .execute()
     )
 
-    if result.data:
-
-        student = (
-            result.data[0]
-        )
+    if student:
 
         st.metric(
             "⭐ 내 점수",
@@ -2190,162 +1975,7 @@ def student_score_panel(
 
 
 # =========================================================
-# 19. 정답 검사
-# =========================================================
-
-def check_answer(
-    answer,
-    student_id,
-    room_code
-):
-
-    # -----------------------------------------------------
-    # 제출 순간에도 게임 종료 여부 확인
-    # -----------------------------------------------------
-
-    room = get_room(
-        room_code
-    )
-
-    if (
-        room is None
-        or
-        room["status"]
-        != "playing"
-    ):
-
-        st.session_state.last_room_status = (
-            room["status"]
-            if room
-            else None
-        )
-
-        st.rerun()
-
-        return
-
-    # -----------------------------------------------------
-    # 주의:
-    # strip()을 사용하지 않음.
-    #
-    # 파이썬 들여쓰기를 문제로 낼 경우
-    # 앞쪽 공백도 정답의 일부이기 때문.
-    # -----------------------------------------------------
-
-    matched_index = None
-
-    for index, command in enumerate(
-        st.session_state.active_commands
-    ):
-
-        if answer == command:
-
-            matched_index = index
-
-            break
-
-    result = (
-        supabase
-        .table("students")
-        .select(
-            "score, "
-            "correct_count, "
-            "wrong_count"
-        )
-        .eq(
-            "id",
-            student_id
-        )
-        .execute()
-    )
-
-    if not result.data:
-
-        st.error(
-            "학생 정보를 찾을 수 없습니다."
-        )
-
-        return
-
-    student = (
-        result.data[0]
-    )
-
-    # -----------------------------------------------------
-    # 정답
-    # -----------------------------------------------------
-
-    if matched_index is not None:
-
-        (
-            supabase
-            .table("students")
-            .update({
-
-                "score":
-                    student["score"]
-                    + 10,
-
-                "correct_count":
-                    student[
-                        "correct_count"
-                    ]
-                    + 1
-
-            })
-            .eq(
-                "id",
-                student_id
-            )
-            .execute()
-        )
-
-        # 맞힌 코드만 새 문제로 변경
-        replace_command(
-            matched_index
-        )
-
-        st.toast(
-            "정답! +10점 🌼"
-        )
-
-        st.rerun()
-
-    # -----------------------------------------------------
-    # 오답
-    # -----------------------------------------------------
-
-    else:
-
-        (
-            supabase
-            .table("students")
-            .update({
-
-                "wrong_count":
-                    student[
-                        "wrong_count"
-                    ]
-                    + 1
-
-            })
-            .eq(
-                "id",
-                student_id
-            )
-            .execute()
-        )
-
-        st.error(
-            "🍂 화면에 있는 코드와 "
-            "일치하지 않습니다. "
-            "대소문자, 괄호, 따옴표, "
-            "띄어쓰기를 확인하세요."
-        )
-
-
-# =========================================================
-# 20. 실시간 팀 점수
+# 19. 실시간 팀 점수
 # =========================================================
 
 @st.fragment(run_every="2s")
@@ -2354,9 +1984,11 @@ def live_team_scoreboard(
     team_count
 ):
 
-    scores = get_team_scores(
-        room_code,
-        team_count
+    scores = (
+        get_team_scores(
+            room_code,
+            team_count
+        )
     )
 
     st.write(
@@ -2386,8 +2018,15 @@ def live_team_scoreboard(
 
         team_html = f"""
 <div class="team-card">
-<div class="team-number">{icons[team - 1]} {team}팀</div>
-<div class="team-score">{score}점</div>
+
+<div class="team-number">
+{icons[team - 1]} {team}팀
+</div>
+
+<div class="team-score">
+{score}점
+</div>
+
 </div>
 """
 
@@ -2398,7 +2037,7 @@ def live_team_scoreboard(
 
 
 # =========================================================
-# 21. 종료 화면
+# 20. 최종 결과
 # =========================================================
 
 def show_finished_screen(
@@ -2410,9 +2049,11 @@ def show_finished_screen(
         "🌼 게임이 종료되었습니다!"
     )
 
-    scores = get_team_scores(
-        room_code,
-        team_count
+    scores = (
+        get_team_scores(
+            room_code,
+            team_count
+        )
     )
 
     ranking = sorted(
@@ -2446,17 +2087,26 @@ def show_finished_screen(
         start=1
     ):
 
-        icon = rank_icons[
-            min(
-                rank - 1,
-                len(rank_icons) - 1
-            )
-        ]
+        icon = (
+            rank_icons[
+                min(
+                    rank - 1,
+                    len(rank_icons) - 1
+                )
+            ]
+        )
 
         result_html = f"""
 <div class="team-card">
-<div class="team-number">{icon} {rank}위</div>
-<div class="team-score">{team}팀 · {score}점</div>
+
+<div class="team-number">
+{icon} {rank}위
+</div>
+
+<div class="team-score">
+{team}팀 · {score}점
+</div>
+
 </div>
 """
 
@@ -2475,7 +2125,7 @@ def show_finished_screen(
 
 
 # =========================================================
-# 22. 페이지 실행
+# 21. 페이지 실행
 # =========================================================
 
 if (
